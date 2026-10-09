@@ -1,0 +1,10 @@
+{
+  "name": "Orbit Personal AI Companion",
+  "short_name": "Orbit",
+  "description": "A private-first personal companion starter app",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#10131b",
+  "theme_color": "#10131b",
+  "icons": []
+}

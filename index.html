@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10131b">
+  <meta name="description" content="A private-first personal AI companion starter app.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Orbit — Personal AI Companion</title>
+  <style>
+    :root { color-scheme: dark; --bg:#10131b; --panel:#191e2a; --panel2:#202737; --text:#f4f6fb; --muted:#9ca8bc; --line:#30394b; --accent:#a6f0d0; --accent2:#8db8ff; --danger:#ffb4a9; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button,input,textarea { font:inherit; }
+    button { cursor:pointer; }
+    .app { max-width:760px; margin:0 auto; min-height:100dvh; display:flex; flex-direction:column; padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
+    header { display:flex; align-items:center; justify-content:space-between; padding:18px 2px 14px; gap:12px; }
+    .brand { display:flex; gap:11px; align-items:center; }
+    .orb { width:42px; height:42px; border-radius:15px; display:grid; place-items:center; background:linear-gradient(135deg,#a6f0d0,#8db8ff); color:#10131b; font-size:22px; font-weight:900; }
+    h1 { font-size:20px; margin:0; letter-spacing:.2px; }
+    .sub { color:var(--muted); font-size:12px; }
+    .pill { border:1px solid var(--line); border-radius:999px; padding:7px 10px; font-size:12px; color:var(--accent); white-space:nowrap; }
+    nav { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; padding:8px; background:var(--panel); border:1px solid var(--line); border-radius:18px; position:sticky; top:0; z-index:2; }
+    nav button { background:transparent; color:var(--muted); border:0; border-radius:12px; padding:10px 4px; font-size:12px; }
+    nav button.active { background:var(--panel2); color:var(--accent); }
+    main { flex:1; padding:18px 0 28px; }
+    .eyebrow { color:var(--accent); text-transform:uppercase; font-size:11px; font-weight:750; letter-spacing:1.4px; }
+    h2 { font-size:25px; line-height:1.2; margin:6px 0 8px; }
+    p { color:var(--muted); margin:6px 0 14px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px; margin:12px 0; }
+    .row { display:flex; gap:10px; align-items:center; justify-content:space-between; }
+    .row.wrap { flex-wrap:wrap; }
+    .title { font-weight:700; }
+    .small { color:var(--muted); font-size:13px; }
+    .btn { border:1px solid var(--line); border-radius:12px; padding:10px 13px; background:var(--panel2); color:var(--text); }
+    .btn.primary { background:var(--accent); color:#10131b; border-color:transparent; font-weight:750; }
+    .btn.warn { color:var(--danger); }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .field { width:100%; border:1px solid var(--line); border-radius:12px; padding:12px; background:#111722; color:var(--text); outline:none; }
+    .field:focus { border-color:var(--accent2); }
+    textarea.field { min-height:90px; resize:vertical; }
+    .chat { display:flex; flex-direction:column; gap:10px; margin:16px 0; }
+    .bubble { max-width:90%; padding:12px 14px; border-radius:16px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .bubble.ai { align-self:flex-start; background:var(--panel2); border:1px solid var(--line); }
+    .bubble.user { align-self:flex-end; background:#25433c; border:1px solid #386b5b; }
+    .chatbar { display:flex; gap:8px; }
+    .chatbar input { flex:1; min-width:0; }
+    .empty { text-align:center; padding:22px 10px; color:var(--muted); }
+    .checkline { display:flex; gap:10px; align-items:flex-start; margin:12px 0; }
+    .checkline input { accent-color:var(--accent); margin-top:5px; }
+    .status { padding:10px 12px; background:#1e342f; border:1px solid #315a4e; color:var(--accent); border-radius:12px; font-size:13px; }
+    .dangerbox { padding:12px; background:#352522; border:1px solid #67413b; color:#ffd2cb; border-radius:12px; font-size:13px; }
+    .task { padding:12px 0; border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:flex-start; }
+    .task:last-child { border-bottom:0; }
+    .task input { accent-color:var(--accent); margin-top:5px; }
+    .task.done .tasktext { text-decoration:line-through; color:var(--muted); }
+    .hidden { display:none !important; }
+    footer { padding:14px 0 22px; color:var(--muted); font-size:11px; text-align:center; }
+    @media (min-width:600px) { .app { padding-left:24px; padding-right:24px; } nav button { font-size:13px; } }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="orb">O</div><div><h1>Orbit</h1><div class="sub">Your personal companion · starter build</div></div></div>
+    <div class="pill" id="connection">LOCAL MODE</div>
+  </header>
+  <nav aria-label="Main navigation">
+    <button class="active" data-page="home">⌂<br>Home</button>
+    <button data-page="chat">◌<br>Chat</button>
+    <button data-page="tasks">✓<br>Tasks</button>
+    <button data-page="memory">▤<br>Memory</button>
+  </nav>
+  <main>
+    <section id="page-home">
+      <div class="eyebrow">Personal AI · Version 0</div>
+      <h2>A small core.<br>A bigger future.</h2>
+      <p>This is the safe foundation for your companion. Start with notes, tasks and a chat interface. Connect an AI model only after the privacy and permission rules are clear.</p>
+      <div class="card">
+        <div class="row"><div><div class="title">Your workspace</div><div class="small">Stored on this device in this browser</div></div><span>🔒</span></div>
+        <div style="height:14px"></div>
+        <div class="row"><div><div class="small">Saved memories</div><div class="title" id="memoryCount">0</div></div><div><div class="small">Open tasks</div><div class="title" id="taskCount">0</div></div></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Quick start</div>
+        <div class="row wrap" style="margin-top:12px"><button class="btn primary" onclick="showPage('chat')">Talk to Orbit</button><button class="btn" onclick="showPage('memory')">Add a memory</button><button class="btn" onclick="showPage('tasks')">Create a task</button></div>
+      </div>
+      <div class="card">
+        <div class="title">What works in this starter?</div>
+        <p class="small">Local chat demo, saved notes, task list, permission preferences and a responsive Android-friendly layout.</p>
+        <div class="status">No microphone, cloud account, messages, files or device controls are accessed by this prototype.</div>
+      </div>
+    </section>
+
+    <section id="page-chat" class="hidden">
+      <div class="eyebrow">Conversation</div><h2>Hey. I'm Orbit.</h2>
+      <p>This first build uses a local demo response—not a connected AI model yet.</p>
+      <div id="chatlog" class="chat" aria-live="polite"></div>
+      <form id="chatform" class="chatbar"><input id="chatinput" class="field" autocomplete="off" placeholder="Tell me what you're working on…" aria-label="Message"><button class="btn primary" type="submit">Send</button></form>
+      <div class="small" style="margin-top:10px">Next upgrade: connect a model API through a small backend. Never put API keys inside a mobile app or this HTML file.</div>
+    </section>
+
+    <section id="page-tasks" class="hidden">
+      <div class="eyebrow">Personal workflow</div><h2>Tasks</h2><p>Keep the next useful action visible. Tasks are saved locally on this device.</p>
+      <form id="taskform" class="row" style="align-items:stretch"><input id="taskinput" class="field" placeholder="e.g. Learn Python lists" required><button class="btn primary" type="submit">Add</button></form>
+      <div class="card" id="tasklist"><div class="empty">No tasks yet. Add one small next step.</div></div>
+    </section>
+
+    <section id="page-memory" class="hidden">
+      <div class="eyebrow">User-controlled memory</div><h2>Memory</h2><p>Save only useful information you choose to keep. Avoid passwords, API keys, banking details and other secrets.</p>
+      <form id="memoryform" class="card">
+        <label class="small" for="memoryinput">A preference, goal or project detail</label>
+        <textarea id="memoryinput" class="field" style="margin-top:8px" placeholder="Example: I prefer explanations with practical examples." required></textarea>
+        <div class="row" style="margin-top:10px"><span class="small">Saved only in this browser</span><button class="btn primary" type="submit">Save memory</button></div>
+      </form>
+      <div id="memorylist"></div>
+      <button id="clearMemory" class="btn warn">Delete all memories</button>
+    </section>
+
+    <section id="page-settings" class="hidden">
+      <div class="eyebrow">Control center</div><h2>Permissions & privacy</h2>
+      <p>Start with least privilege. Add capabilities one at a time, only when there is a clear use case.</p>
+      <div class="card">
+        <div class="title">Permission levels</div>
+        <div class="checkline"><input type="checkbox" checked disabled><div><b>Level 0 · Observe</b><div class="small">Read what you explicitly enter into this app.</div></div></div>
+        <div class="checkline"><input type="checkbox" checked disabled><div><b>Level 1 · Suggest</b><div class="small">Offer plans and draft actions; no external execution.</div></div></div>
+        <div class="checkline"><input type="checkbox" disabled><div><b>Level 2 · Ask first</b><div class="small">Future: request approval before sending, changing or deleting anything.</div></div></div>
+        <div class="checkline"><input type="checkbox" disabled><div><b>Level 3+ · Limited automation</b><div class="small">Not implemented. Must use narrow scopes, logs and a kill switch.</div></div></div>
+      </div>
+      <div class="dangerbox"><b>Important:</b> Do not give an AI unrestricted access to your phone, passwords, bank account, email or shell. Approval should be specific to each sensitive action, and revocable.</div>
+      <div class="card"><div class="title">Data controls</div><p class="small">This demo stores tasks and memories in browser local storage. Anyone with access to this browser profile may be able to access them. Do not save sensitive information here.</p><button id="exportData" class="btn">Export my data (JSON)</button> <button id="wipeData" class="btn warn">Erase all local data</button></div>
+    </section>
+  </main>
+  <footer>ORBIT · PRIVATE-FIRST STARTER · NO CLOUD CONNECTION YET</footer>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const load = (key, fallback) => { try { return JSON.parse(localStorage.getItem("orbit_"+key)) ?? fallback; } catch { return fallback; } };
+  const save = (key, value) => localStorage.setItem("orbit_"+key, JSON.stringify(value));
+  let memories = load("memories", []);
+  let tasks = load("tasks", []);
+  let messages = load("messages", [{role:"ai", text:"Hi. I'm Orbit, your starter companion. I can help you capture a goal, create a task, or save a preference. My real AI brain and voice are not connected yet."}]);
+
+  function showPage(page) {
+    document.querySelectorAll("main section").forEach(s => s.classList.add("hidden"));
+    const target = $("page-"+page);
+    if (target) target.classList.remove("hidden");
+    document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.page === page));
+    render();
+  }
+  document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => showPage(b.dataset.page)));
+  // Settings is intentionally reachable from the Home screen's privacy card below.
+  function openSettings() { showPage("settings"); }
+  const settingsButton = document.createElement("button");
+  settingsButton.className = "btn";
+  settingsButton.textContent = "⚙ Privacy & permissions";
+  settingsButton.style.marginTop = "12px";
+  settingsButton.onclick = openSettings;
+  document.querySelector("#page-home .card:last-child").appendChild(settingsButton);
+
+  function renderChat() {
+    $("chatlog").innerHTML = "";
+    messages.forEach(m => {
+      const b = document.createElement("div");
+      b.className = "bubble "+(m.role === "user" ? "user" : "ai");
+      b.textContent = m.text;
+      $("chatlog").appendChild(b);
+    });
+    $("chatlog").scrollTop = $("chatlog").scrollHeight;
+  }
+  $("chatform").addEventListener("submit", e => {
+    e.preventDefault();
+    const text = $("chatinput").value.trim();
+    if (!text) return;
+    messages.push({role:"user",text});
+    const reply = "I've captured that in this demo conversation. I don't have a connected AI model or external tools yet. You can turn it into a task, or save a durable preference in Memory.";
+    messages.push({role:"ai",text:reply});
+    save("messages", messages); $("chatinput").value = ""; renderChat();
+  });
+  $("taskform").addEventListener("submit", e => {
+    e.preventDefault(); const text = $("taskinput").value.trim(); if (!text) return;
+    tasks.unshift({id:Date.now(),text,done:false}); save("tasks",tasks); $("taskinput").value=""; render();
+  });
+  $("memoryform").addEventListener("submit", e => {
+    e.preventDefault(); const text=$("memoryinput").value.trim(); if(!text) return;
+    memories.unshift({id:Date.now(),text,created:new Date().toISOString()}); save("memories",memories); $("memoryinput").value=""; render();
+  });
+  $("clearMemory").addEventListener("click", () => {
+    if(confirm("Delete every saved Orbit memory from this browser?")) { memories=[]; save("memories",memories); render(); }
+  });
+  $("wipeData").addEventListener("click", () => {
+    if(confirm("Erase all Orbit tasks, memories and demo chat from this browser?")) {
+      ["memories","tasks","messages"].forEach(k=>localStorage.removeItem("orbit_"+k));
+      memories=[]; tasks=[]; messages=[{role:"ai",text:"Local data cleared. Welcome back."}]; save("messages",messages); render();
+    }
+  });
+  $("exportData").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify({memories,tasks,messages,exportedAt:new Date().toISOString()},null,2)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="orbit-personal-data.json"; a.click(); URL.revokeObjectURL(a.href);
+  });
+  function render() {
+    $("memoryCount").textContent=memories.length;
+    $("taskCount").textContent=tasks.filter(t=>!t.done).length;
+    $("tasklist").innerHTML="";
+    if(!tasks.length) $("tasklist").innerHTML='<div class="empty">No tasks yet. Add one small next step.</div>';
+    tasks.forEach(t=>{
+      const row=document.createElement("div"); row.className="task"+(t.done?" done":"");
+      const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=t.done; cb.setAttribute("aria-label","Complete task");
+      cb.addEventListener("change",()=>{t.done=cb.checked;save("tasks",tasks);render();});
+      const text=document.createElement("div"); text.className="tasktext"; text.style.flex="1"; text.textContent=t.text;
+      const del=document.createElement("button"); del.className="btn"; del.textContent="Delete"; del.addEventListener("click",()=>{tasks=tasks.filter(x=>x.id!==t.id);save("tasks",tasks);render();});
+      row.append(cb,text,del); $("tasklist").appendChild(row);
+    });
+    $("memorylist").innerHTML="";
+    if(!memories.length) $("memorylist").innerHTML='<div class="empty">No saved memories yet.</div>';
+    memories.forEach(m=>{
+      const card=document.createElement("div"); card.className="card";
+      const txt=document.createElement("div"); txt.textContent=m.text;
+      const meta=document.createElement("div"); meta.className="small"; meta.style.marginTop="8px"; meta.textContent=new Date(m.created).toLocaleString();
+      const del=document.createElement("button"); del.className="btn warn"; del.style.marginTop="10px"; del.textContent="Delete"; del.addEventListener("click",()=>{memories=memories.filter(x=>x.id!==m.id);save("memories",memories);render();});
+      card.append(txt,meta,del); $("memorylist").appendChild(card);
+    });
+    renderChat();
+  }
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+  }
+  render();
+</script>
+</body>
+</html>
